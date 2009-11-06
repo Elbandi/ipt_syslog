@@ -488,9 +488,16 @@ send_data(const char *buffer, const size_t length)
 {
 	struct logs *newlog;
 	if (loglist_total >= loglist_maxlen) {
+		struct logs * log_entry;
+
 		loglist_dropped++;
 		printk(KERN_WARNING "ip_SYSLOG: full at %d entries, dropping log. Dropped: %d\n", loglist_total, loglist_dropped);
-		return;
+		log_entry =  list_first_entry(&logs_list, struct logs, logs_list);
+
+		loglist_total--;
+		list_del(&log_entry->logs_list);
+		kfree(log_entry->data);
+		kfree(log_entry);
 	}
 
 	newlog = kzalloc(sizeof(struct logs), GFP_KERNEL);
