@@ -1,4 +1,4 @@
-/* Shared library add-on to iptables to add LOG support. */
+/* Shared library add-on to iptables to add SYSLOG support. */
 #include <stdio.h>
 #include <netdb.h>
 #include <string.h>
@@ -22,7 +22,7 @@ static void
 help(void)
 {
 	printf(
-"LOG v%s options:\n"
+"SYSLOG v%s options:\n"
 " --log-level level		Level of logging (numeric or see syslog.conf)\n"
 " --log-prefix prefix		Prefix log messages with this prefix.\n\n"
 " --log-tcp-sequence		Log TCP sequence numbers.\n\n"
@@ -214,7 +214,7 @@ print(const struct ipt_ip *ip,
 		= (const struct ipt_log_info *)target->data;
 	unsigned int i = 0;
 
-	printf("LOG ");
+	printf("SYSLOG ");
 	if (numeric)
 		printf("flags %u level %u ",
 		       loginfo->logflags, loginfo->level);
@@ -271,7 +271,7 @@ save(const struct ipt_ip *ip, const struct ipt_entry_target *target)
 static
 struct iptables_target log
 = {
-    .name          = "LOG",
+    .name          = "SYSLOG",
     .version       = IPTABLES_VERSION,
     .size          = IPT_ALIGN(sizeof(struct ipt_log_info)),
     .userspacesize = IPT_ALIGN(sizeof(struct ipt_log_info)),
