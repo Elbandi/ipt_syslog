@@ -1,0 +1,14 @@
+This package was debianized by Andras Elso <elso.andras@gmail.com> on
+Fri, 06 Nov 2009 21:37:33 +0100.
+
+Copyright Holders:
+
+Copyright 2009 Andras Elso (elso.andras@gmail.com)
+
+License:
+SYSLOG:
+    
+    MODULE_LICENSE("GPL");
+
+The Debian packaging is (C) 2009, Andras Elso <elso.andras@gmail.com> and
+is licensed under the GPL, see `/usr/share/common-licenses/GPL'.

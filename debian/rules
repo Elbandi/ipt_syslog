@@ -1,0 +1,116 @@
+#!/usr/bin/make -f
+.NOTPARALLEL:
+
+export
+
+##
+## SYSLOG
+##
+CONFIG_IP_NF_TARGET_SYSLOG = m
+
+POM_MODULES += ipt_SYSLOG.ko
+
+IPTABLES_MODULES += libipt_SYSLOG.so
+
+EXTRA_CFLAGS += -I ${CURDIR}/include
+EXTRA_CFLAGS += ${POM_DEF_CONFIG}
+
+
+psource:=iptables-syslog-source
+
+sname:=iptables-syslog
+
+### KERNEL SETUP
+
+PACKAGE=iptables-syslog-modules
+MA_DIR ?= /usr/share/modass
+-include $(MA_DIR)/include/generic.make
+-include $(MA_DIR)/include/common-rules.make
+  
+kdist_config: prep-deb-files
+kdist_clean:
+	$(MAKE) -C $(KSRC) M=$(CURDIR) clean
+
+### end  KERNEL SETUP
+
+include /usr/share/dpatch/dpatch.make
+
+binary-modules:
+	dh_testroot
+	dh_clean -k
+
+	# Build the module
+	$(MAKE) -C $(KSRC) M=$(CURDIR) modules
+
+	# Install the modules
+	for module in $(POM_MODULES); do \
+		install -D -m 0644 $$module debian/$(PKGNAME)/lib/modules/$(KVERS)/kernel/$$module; \
+		strip --strip-debug debian/$(PKGNAME)/lib/modules/$(KVERS)/kernel/$$module; \
+	done
+
+	dh_installdocs
+	dh_installchangelogs
+	dh_compress
+	dh_fixperms
+	dh_installmodules
+	dh_installdeb
+	dh_gencontrol -- -v$(VERSION)
+	dh_md5sums
+	dh_builddeb --destdir=$(DEB_DESTDIR)
+	dh_clean -k
+
+build: patch-stamp
+	dh_testdir
+	dh_testroot
+
+	# Build the iptables module
+	$(MAKE) $(IPTABLES_MODULES)
+
+clean: unpatch
+	dh_testdir
+	dh_testroot
+
+	$(MAKE) clean
+	dh_clean
+
+install: DH_OPTIONS=
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+
+	# Create the directories to install the source into
+	dh_installdirs -p$(psource) usr/src/modules/$(sname)/debian
+	dh_installdirs -p$(sname) lib/iptables
+
+	# Copy only the driver source to the proper location
+	cp -r ipt_SYSLOG.c Makefile debian/$(psource)/usr/src/modules/$(sname)
+	# Copy the needed debian/ pieces to the proper location
+	cp debian/*modules.in* \
+		debian/$(psource)/usr/src/modules/$(sname)/debian
+	cp debian/rules debian/changelog debian/copyright \
+		debian/compat debian/$(psource)/usr/src/modules/$(sname)/debian/
+	cd debian/$(psource)/usr/src && tar c modules | bzip2 -9 > $(sname).tar.bz2 && rm -rf modules
+
+	dh_install -p$(sname) $(IPTABLES_MODULES) lib/iptables
+
+binary-indep: build install
+
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_install
+	dh_installchangelogs
+	dh_installdocs
+	dh_link
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install binary-modules kdist kdist_config kdist_image kdist_clean

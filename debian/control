@@ -1,0 +1,37 @@
+Source: iptables-syslog
+Section: net
+Priority: extra
+Maintainer: Andras Elso <elso.andras@gmail.com>
+Build-Depends: debhelper (>= 5), bzip2, dpatch
+Standards-Version: 3.7.2
+
+Package: iptables-syslog
+Architecture: any
+Depends: iptables
+Description: modules for netfilter
+ This package provides the modules for the netfilter.
+ .
+ The following netfilter extensions are included:
+ .
+   SYSLOG
+ .
+ Note that these modules are not included in the upstream Linux kernel because
+ they may be buggy or experimental and should be used with caution.
+
+Package: iptables-syslog-source
+Architecture: all
+Depends: module-assistant, debhelper (>= 5), make, bzip2
+Description: source for netfilter kernel modules derived from elbandi
+ This package provides the source code for the iptables-syslog kernel
+ modules. Kernel source or headers are required to compile these modules.
+ .
+ The following netfilter extensions are included:
+ .
+   SYSLOG
+ .
+ The modules in this package should be usable with the unmodified Linux
+ kernel and iptables packages included in Debian; they do not require extracted
+ Linux kernel and iptables source trees as part of the build process.
+ .
+ Note that these modules are not included in the upstream Linux kernel because
+ they may be buggy or experimental and should be used with caution.

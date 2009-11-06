@@ -1,0 +1,30 @@
+Source: iptables-syslog
+Section: net
+Priority: optional
+Maintainer: Andras Elso <elso.andras@gmail.com>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.7.2
+
+Package: iptables-syslog-modules-_KVERS_
+Architecture: any
+Provides: iptables-syslog-modules
+Depends: linux-image-_KVERS_
+Recommends: iptables, ipset
+Description: iptables-syslog modules for Linux (kernel _KVERS_).
+ This package contains the set of loadable kernel modules for
+ iptables-syslog.
+ .
+ The following netfilter extensions are included:
+ .
+   SYSLOG
+ .
+ This package contains the compiled kernel modules for _KVERS_
+ .
+ If you have compiled your own kernel, you will most likely need to build your
+ own iptables-syslog-modules. The iptables-syslog-source package has
+ been provided for use with Debian's module-assistant or kernel-package
+ utilities to produce a version of iptables-syslog-modules for your
+ kernel.
+ .
+ Note that these modules are not included in the upstream Linux kernel because
+ they may be buggy or experimental and should be used with caution.

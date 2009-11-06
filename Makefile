@@ -1,5 +1,5 @@
 ifneq ($(KERNELRELEASE),)
-obj-m := ipt_SYSLOG.o
+obj-$(CONFIG_IP_NF_TARGET_SYSLOG) := ipt_SYSLOG.o
 
 else
 
@@ -45,6 +45,7 @@ else
 endif
 
 IPTABLES_OPTION = -DIPTABLES_VERSION=\"$(IPTABLES_VERSION)\"
+export CONFIG_IP_NF_TARGET_SYSLOG = m
 
 CC = gcc
 CFLAGS = -O3 -Wall

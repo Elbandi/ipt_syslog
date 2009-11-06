@@ -1,0 +1,6 @@
+iptables-syslog (0.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Andras Elso <elso.andras@gmail.com>  Fri, 06 Nov 2009 21:37:33 +0100
+
