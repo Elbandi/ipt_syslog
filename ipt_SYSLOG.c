@@ -651,25 +651,38 @@ static const struct file_operations ip_syslogstat_proc_fops = {
 
 static int syslog_connect(struct socket **socket)
 {
-	int ret;
+	int ret = 0;
+	int retry = 0;
+	int logtype = SOCK_DGRAM;
 	struct sockaddr_un syslog_server;
 
-	ret = sock_create_kern(PF_UNIX, SOCK_STREAM, 0, socket);
-	if (ret < 0)
-		goto out;
+	while (retry < 2)
+	{
+		ret = sock_create_kern(PF_UNIX, logtype, 0, socket);
+		if (ret < 0)
+			break;
 
-	syslog_server.sun_family = PF_UNIX;
-	strcpy(syslog_server.sun_path , "/dev/log");
-	ret = kernel_connect(*socket, (struct sockaddr *)&syslog_server, sizeof(struct sockaddr_un) - 1, 0);
-	if (ret < 0)
-		goto cleanup_sock;
+		syslog_server.sun_family = PF_UNIX;
+		strcpy(syslog_server.sun_path , "/dev/log");
+		ret = kernel_connect(*socket, (struct sockaddr *)&syslog_server, sizeof(struct sockaddr_un) - 1, 0);
+		if (ret < 0)
+		{
+			if (ret == -EPROTOTYPE)
+			{
+				logtype = (logtype == SOCK_DGRAM ? SOCK_STREAM : SOCK_DGRAM);
+			}
+			retry++;
+			goto cleanup_sock;
+		}
 
-	(*socket)->sk->sk_allocation = GFP_NOIO;
-	return ret;
+		(*socket)->sk->sk_allocation = GFP_NOIO;
+		return ret;
+
 cleanup_sock:
-	sock_release(*socket);
-	*socket = NULL;
-out:
+		sock_release(*socket);
+		*socket = NULL;
+	}
+
 	return ret;
 }
 
