@@ -30,8 +30,12 @@ MODULE_AUTHOR("Andras Elso <elso.andras@gmail.com>");
 MODULE_DESCRIPTION("iptables syslog logging module");
 
 static unsigned int loglist_maxlen __read_mostly = 1024;
-module_param(loglist_maxlen, uint, 0400);
+module_param(loglist_maxlen, uint, 0600);
 MODULE_PARM_DESC(loglist_maxlen, "loglist size");
+
+static unsigned int reconnect_freq = 5000;
+module_param(reconnect_freq, uint, 0600);
+MODULE_PARM_DESC(reconnect_freq, "reconnect frequency if syslog offline");
 
 struct logs {
 	char *data;
@@ -427,7 +431,7 @@ static void syslog_work_fn(struct work_struct *work)
 		goto cont;
 	if (!timer_pending(&timer))
 	{
-		timer.expires = jiffies + msecs_to_jiffies(1000);
+		timer.expires = jiffies + msecs_to_jiffies(reconnect_freq);
 		add_timer(&timer);
 	}
 	return ;
@@ -699,7 +703,7 @@ static int __init ipt_log_init(void)
 	{
 		if (ret == -ECONNREFUSED)
 		{
-			timer.expires = jiffies + msecs_to_jiffies(1000);
+			timer.expires = jiffies + msecs_to_jiffies(reconnect_freq);
 			add_timer(&timer);
 		}
 		else
