@@ -443,40 +443,42 @@ cont:
 
 	spin_lock_irq(&log_lock);
 
-	log_entry =  list_first_entry(&logs_list, struct logs, logs_list);
-
-	printk(KERN_DEBUG "ip_syslog: work data (%d): %d\n", counter, log_entry->counter);
-
-	n = strlen(log_entry->data);
-	iov.iov_base     = (void *)log_entry->data;
-	iov.iov_len      = n;
-	msg.msg_name = NULL;
-	msg.msg_namelen = 0;
-	msg.msg_iov = (struct iovec *)&iov;
-	msg.msg_iovlen = 1;
-	msg.msg_control = NULL;
-	msg.msg_controllen = 0;
-	msg.msg_namelen = 0;
-	msg.msg_flags = MSG_DONTWAIT|MSG_NOSIGNAL;
-
-	ret = kernel_sendmsg(sl_socket, &msg, &iov, 1, n);
-	if (ret < 0)
+	while (!list_empty(&logs_list))
 	{
-		printk("ip_syslog: kernel_sendmsg error:%d\n", ret);
-		if (ret == -EPIPE)
+		log_entry =  list_first_entry(&logs_list, struct logs, logs_list);
+
+		printk(KERN_DEBUG "ip_syslog: work data (%d): %d\n", counter, log_entry->counter);
+
+		n = strlen(log_entry->data);
+		iov.iov_base     = (void *)log_entry->data;
+		iov.iov_len      = n;
+		msg.msg_name = NULL;
+		msg.msg_namelen = 0;
+		msg.msg_iov = (struct iovec *)&iov;
+		msg.msg_iovlen = 1;
+		msg.msg_control = NULL;
+		msg.msg_controllen = 0;
+		msg.msg_namelen = 0;
+		msg.msg_flags = MSG_DONTWAIT|MSG_NOSIGNAL;
+
+		ret = kernel_sendmsg(sl_socket, &msg, &iov, 1, n);
+		if (ret < 0)
 		{
-			syslog_close(&sl_socket);
-			schedule_work(&syslog_work);
+			printk("ip_syslog: kernel_sendmsg error:%d\n", ret);
+			if (ret == -EPIPE)
+			{
+				syslog_close(&sl_socket);
+				schedule_work(&syslog_work);
+			}
+			break;
 		}
-		goto out;
+
+		loglist_total--;
+		list_del(&log_entry->logs_list);
+		kfree(log_entry->data);
+		kfree(log_entry);
 	}
 
-	loglist_total--;
-	list_del(&log_entry->logs_list);
-	kfree(log_entry->data);
-	kfree(log_entry);
-
-out:
 	spin_unlock_irq(&log_lock);
 	return ;
 }
