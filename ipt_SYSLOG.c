@@ -697,6 +697,7 @@ cleanup_sock:
 
 static void syslog_close(struct socket **socket)
 {
+	if (!*socket) return;
 	kernel_sock_shutdown(*socket, SHUT_RDWR);
 	sock_release(*socket);
 	*socket = NULL;
